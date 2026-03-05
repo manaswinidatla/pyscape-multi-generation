@@ -1,6 +1,6 @@
 // src/pages/ModulePage.js
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
 const moduleData = {
   1: {
@@ -71,6 +71,7 @@ const moduleData = {
 
 const ModulePage = () => {
   const { moduleId } = useParams();
+  const navigate = useNavigate();
   const module = moduleData[moduleId];
 
   // Track which lessons are expanded
@@ -87,6 +88,12 @@ const ModulePage = () => {
 
   return (
     <div className="p-8">
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-gray-400 hover:text-white text-sm mb-6 transition-colors"
+      >
+        ← Back
+      </button>
       <h1 className="text-3xl font-bold mb-6 text-white">{module.title}</h1>
       <h3 className="text-xl font-semibold mb-4 text-gray-300">Lessons</h3>
 
