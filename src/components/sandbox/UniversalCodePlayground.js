@@ -164,26 +164,59 @@ function createSandboxHtml(isDark) {
 // Main Component
 const UniversalCodePlayground = ({ 
   defaultLanguage = 'javascript',
+  initialCode = null,
   height = '400px',
   className = '',
-  showThemeToggle = true 
+  showThemeToggle = true,
+  testCases = []
 }) => {
   const [isDark, setIsDark] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState(defaultLanguage);
-  const [code, setCode] = useState(languageConfig[defaultLanguage].defaultCode);
+  const [code, setCode] = useState(
+    initialCode != null ? initialCode : languageConfig[defaultLanguage].defaultCode
+  );
   const [output, setOutput] = useState('');
   const [stdin, setStdin] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
+  const [testResults, setTestResults] = useState([]);
+  const [showTestPanel, setShowTestPanel] = useState(true);
 
   const config = languageConfig[currentLanguage];
 
+  // Reset code when language changes
   useEffect(() => {
     setCode(languageConfig[currentLanguage].defaultCode);
     setOutput('');
     setStdin('');
+    setTestResults([]);
   }, [currentLanguage]);
+
+  // Update code when initialCode prop changes (e.g., user clicks a different example)
+  useEffect(() => {
+    if (initialCode != null) {
+      setCode(initialCode);
+      setOutput('');
+      setStdin('');
+      setTestResults([]);
+    }
+  }, [initialCode]);
+
+  // Run test cases comparison after output changes
+  useEffect(() => {
+    if (testCases.length > 0 && output && !isLoading) {
+      const results = testCases.map((tc, idx) => ({
+        id: idx + 1,
+        description: tc.description,
+        check: tc.check,
+        passed: !tc.check
+          ? !output.toLowerCase().includes('error')
+          : output.includes(tc.check)
+      }));
+      setTestResults(results);
+    }
+  }, [output, isLoading, testCases]);
 
   const iframeRef = useRef(null);
   const sandboxUrl = useMemo(() => {
@@ -563,6 +596,84 @@ const UniversalCodePlayground = ({
         </div>
       </div>
       
+      {/* Test Cases Panel */}
+      {testCases.length > 0 && (
+        <div className={`border-t border-slate-600/30`}>
+          <button
+            onClick={() => setShowTestPanel(p => !p)}
+            className={`w-full px-4 py-2 flex items-center justify-between ${themeStyles.header} hover:opacity-90 transition-opacity`}
+          >
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <CheckCircle className="w-4 h-4 text-primary" />
+              <span className={themeStyles.text}>Test Cases</span>
+              {testResults.length > 0 && (
+                <span className="ml-2 text-xs">
+                  <span className="text-green-400">{testResults.filter(r => r.passed).length} passed</span>
+                  {testResults.some(r => !r.passed) && (
+                    <span className="text-red-400 ml-1">{testResults.filter(r => !r.passed).length} failed</span>
+                  )}
+                </span>
+              )}
+            </div>
+            <svg
+              className={`w-4 h-4 ${themeStyles.subtext} transition-transform duration-200 ${showTestPanel ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showTestPanel && (
+            <div className={`px-4 py-3 space-y-2`}>
+              {testResults.length === 0 ? (
+                <p className={`text-xs ${themeStyles.subtext} italic`}>
+                  ▶ Run your code to check the test cases below.
+                </p>
+              ) : null}
+              {testCases.map((tc, idx) => {
+                const result = testResults[idx];
+                return (
+                  <div
+                    key={idx}
+                    className={`flex items-start gap-3 p-3 rounded-lg border text-sm ${
+                      !result
+                        ? `${themeStyles.editor} border-slate-600/30 opacity-60`
+                        : result.passed
+                        ? 'bg-green-500/10 border-green-500/30'
+                        : 'bg-red-500/10 border-red-500/30'
+                    }`}
+                  >
+                    <span className="mt-0.5 text-base leading-none">
+                      {!result ? '⬜' : result.passed ? '✅' : '❌'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium ${themeStyles.text}`}>
+                        Test {idx + 1}: {tc.description}
+                      </p>
+                      {tc.check && (
+                        <p className={`mt-1 text-xs font-mono truncate ${themeStyles.subtext}`}>
+                          Expected output to contain: <span className="text-primary">"{tc.check}"</span>
+                        </p>
+                      )}
+                      {result && !result.passed && tc.check && (
+                        <p className="mt-1 text-xs text-red-400">
+                          Not found in output. Run the code above and verify.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {testResults.length > 0 && (
+                <p className={`text-xs ${themeStyles.subtext} pt-1`}>
+                  💡 Edit the code above and click <strong>Run</strong> again to re-check.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Status Bar */}
       <div className={`${themeStyles.header} px-4 py-2 border-t border-slate-600/30 backdrop-blur-sm`}>
         <div className="flex items-center justify-between text-xs">

@@ -51,7 +51,11 @@ print("Hello, World!")
 print("Welcome to Python programming!")
 
 # Python is that simple! 🎉`,
-            description: "Run this code to see Python in action. The print() function displays text on the screen."
+            description: "Run this code to see Python in action. The print() function displays text on the screen.",
+            testCases: [
+              { description: "Outputs 'Hello, World!' as first line", check: "Hello, World!" },
+              { description: "Outputs the welcome message", check: "Welcome to Python programming!" }
+            ]
           },
           {
             title: "Python is Easy to Read",
@@ -66,7 +70,11 @@ print(f"I am {age} years old")
 print(f"Am I a student? {is_student}")
 
 # No complex syntax - just straightforward code!`,
-            description: "Variables in Python are declared simply, without type declarations."
+            description: "Variables in Python are declared simply, without type declarations.",
+            testCases: [
+              { description: "Name f-string prints correctly", check: "My name is Alice" },
+              { description: "Age f-string prints correctly", check: "I am 25 years old" }
+            ]
           }
         ],
         keyPoints: [
@@ -155,7 +163,11 @@ print('Python is fun!')
 print("Line 1")
 print("Line 2")
 print("Line 3")`,
-            description: "The simplest way to display output in Python."
+            description: "The simplest way to display output in Python.",
+            testCases: [
+              { description: "First print outputs Hello, World!", check: "Hello, World!" },
+              { description: "Multiple lines are printed", check: "Line 3" }
+            ]
           },
           {
             title: "Printing on the Same Line",
@@ -171,7 +183,11 @@ for i in range(5, 0, -1):
 print("Blastoff!")
 
 # Output: 5 4 3 2 1 Blastoff!`,
-            description: "Control how print statements end to create custom output patterns."
+            description: "Control how print statements end to create custom output patterns.",
+            testCases: [
+              { description: "Loading and Done appear on same line", check: "Loading...Done!" },
+              { description: "Countdown finishes with Blastoff!", check: "Blastoff!" }
+            ]
           },
           {
             title: "Advanced Print Tricks",
@@ -190,7 +206,11 @@ print(f"{name} scored {score} points!")
 print("*" * 20)
 print("Welcome to Python!")
 print("*" * 20)`,
-            description: "Combine text, variables, and special characters for formatted output."
+            description: "Combine text, variables, and special characters for formatted output.",
+            testCases: [
+              { description: "sep parameter separates languages with |  ", check: "Python | Java | C++" },
+              { description: "F-string formats name and score", check: "Alice scored 95 points!" }
+            ]
           }
         ],
         keyPoints: [
@@ -299,7 +319,11 @@ print("Charlie\\t\\t28\\tParis")
 # Using sep for CSV-style output
 print("Name", "Age", "City", sep=", ")
 print("Alice", 25, "New York", sep=", ")`,
-            description: "Create organized, tabular output for better readability."
+            description: "Create organized, tabular output for better readability.",
+            testCases: [
+              { description: "Alice's row appears in the table", check: "Alice" },
+              { description: "CSV-style row is printed", check: "Alice, 25, New York" }
+            ]
           },
           {
             title: "Dynamic Progress Indicators",
@@ -317,7 +341,11 @@ for i in range(20):
     print("#", end="", flush=True)
     time.sleep(0.1)
 print("] 100%")`,
-            description: "Create animated loading indicators (note: time.sleep adds delays)."
+            description: "Create animated loading indicators (note: time.sleep adds delays).",
+            testCases: [
+              { description: "Loading text is printed", check: "Loading" },
+              { description: "Completion message appears", check: "Done!" }
+            ]
           },
           {
             title: "Creative Text Art",
@@ -339,7 +367,11 @@ print(" *******")
 print("  *****")
 print("   ***")
 print("    *")`,
-            description: "Use print creatively to draw shapes and patterns with text."
+            description: "Use print creatively to draw shapes and patterns with text.",
+            testCases: [
+              { description: "Welcome message appears inside the box", check: "Welcome to Python!" },
+              { description: "5-star row of diamond is printed", check: " *****" }
+            ]
           }
         ],
         keyPoints: [
@@ -464,7 +496,11 @@ total = price * 0.9  # Actually using 10% discount now
 # ✅ Good: Current and informative
 # Apply 10% discount for loyalty members
 total = price * 0.9`,
-            description: "Learn what makes a comment helpful versus redundant."
+            description: "Learn what makes a comment helpful versus redundant.",
+            testCases: [
+              { description: "Code runs without errors (no print output here)", check: "" },
+              { description: "Comments do not affect program execution", check: "" }
+            ]
           },
           {
             title: "Documenting Your Code",
@@ -492,7 +528,11 @@ def complex_calculation(data):
     """
     # Implementation details...
     pass`,
-            description: "Professional documentation helps others understand your code."
+            description: "Professional documentation helps others understand your code.",
+            testCases: [
+              { description: "Code defines functions without errors", check: "" },
+              { description: "Docstrings are valid Python syntax", check: "" }
+            ]
           },
           {
             title: "Commenting Out Code",
@@ -519,7 +559,11 @@ Debugging notes:
 - Fixed by adding validation
 - TODO: Add unit tests
 """`,
-            description: "Use comments to disable code temporarily or leave debugging notes."
+            description: "Use comments to disable code temporarily or leave debugging notes.",
+            testCases: [
+              { description: "Active print statement executes", check: "This runs!" },
+              { description: "Disabled print lines produce no extra output", check: "This runs!" }
+            ]
           }
         ],
         keyPoints: [
@@ -634,7 +678,11 @@ print("Student:", is_student)
 # Multiple assignment
 x, y, z = 10, 20, 30
 print(f"x={x}, y={y}, z={z}")`,
-            description: "Learn the basics of creating and using variables in Python."
+            description: "Learn the basics of creating and using variables in Python.",
+            testCases: [
+              { description: "Name variable is printed", check: "Name: Alice" },
+              { description: "Multiple assignment prints correctly", check: "x=10, y=20, z=30" }
+            ]
           },
           {
             title: "Variable Naming Styles",
@@ -655,7 +703,11 @@ last_name = "Smith"
 full_name = first_name + " " + last_name
 
 print("Full name:", full_name)`,
-            description: "Follow Python naming conventions for readable, maintainable code."
+            description: "Follow Python naming conventions for readable, maintainable code.",
+            testCases: [
+              { description: "Full name is concatenated and printed", check: "Full name: Alice Smith" },
+              { description: "Concatenated name appears in output", check: "Alice Smith" }
+            ]
           },
           {
             title: "Updating Variables",
@@ -678,7 +730,11 @@ score *= 2   # Multiply
 score //= 3  # Integer division
 
 print("Final score:", score)`,
-            description: "Variables can be updated and modified throughout your program."
+            description: "Variables can be updated and modified throughout your program.",
+            testCases: [
+              { description: "Initial click count starts at 0", check: "Initial clicks: 0" },
+              { description: "After adding 5 more clicks total is 6", check: "After 5 more clicks: 6" }
+            ]
           }
         ],
         keyPoints: [
@@ -805,7 +861,11 @@ print(f"Name: {full_name}, Type: {type(full_name)}")
 is_logged_in = True
 has_access = False
 print(f"Logged in: {is_logged_in}, Type: {type(is_logged_in)}")`,
-            description: "See how different data types work and how to check their types."
+            description: "See how different data types work and how to check their types.",
+            testCases: [
+              { description: "Integer type is shown as <class 'int'>", check: "<class 'int'>" },
+              { description: "Full name printed from string concat", check: "Alice Smith" }
+            ]
           },
           {
             title: "Type Checking in Action",
@@ -825,7 +885,11 @@ print(f"flag ({flag}): {type(flag).__name__}")
 # Type comparison
 print(f"\\nIs number an int? {type(number) == int}")
 print(f"Is decimal a float? {type(decimal) == float}")`,
-            description: "Use type() to inspect and verify variable types."
+            description: "Use type() to inspect and verify variable types.",
+            testCases: [
+              { description: "Number type name is 'int'", check: "int" },
+              { description: "isinstance check returns True", check: "Is number an int? True" }
+            ]
           },
           {
             title: "Type-Based Operations",
@@ -848,7 +912,11 @@ is_warm = False
 print(f"AND: {is_sunny and is_warm}")
 print(f"OR: {is_sunny or is_warm}")
 print(f"NOT: {not is_warm}")`,
-            description: "Different types support different operations."
+            description: "Different types support different operations.",
+            testCases: [
+              { description: "Addition result is 13", check: "Addition: 13" },
+              { description: "String concatenation prints Hello World", check: "Hello World" }
+            ]
           }
         ],
         keyPoints: [
@@ -994,7 +1062,11 @@ print(f"\\nNumber: {number} → String: '{text}'")
 decimal = 9.99
 whole = int(decimal)
 print(f"\\nFloat: {decimal} → Int: {whole}")`,
-            description: "Convert between strings, integers, and floats."
+            description: "Convert between strings, integers, and floats.",
+            testCases: [
+              { description: "String '100' converts to int 100", check: "As int: 100" },
+              { description: "Float 9.99 truncates to int 9", check: "Int: 9" }
+            ]
           },
           {
             title: "User Input Casting",
@@ -1020,7 +1092,11 @@ total = price + tax
 print(f"\nPrice: \${price:.2f}")
 print(f"Tax: \${tax:.2f}")
 print(f"Total: \${total:.2f}")`,
-            description: "Convert user input strings to numbers for calculations."
+            description: "Convert user input strings to numbers for calculations.",
+            testCases: [
+              { description: "Age string converted and printed", check: "You are 25 years old" },
+              { description: "Total price with tax is shown", check: "Total: $" }
+            ]
           },
           {
             title: "Boolean Conversions",
@@ -1042,7 +1118,11 @@ print("\\nBoolean to Other Types:")
 print(f"int(True) = {int(True)}")    # 1
 print(f"int(False) = {int(False)}")  # 0
 print(f"str(True) = '{str(True)}'")  # "True"`,
-            description: "Understand how boolean conversions work with different values."
+            description: "Understand how boolean conversions work with different values.",
+            testCases: [
+              { description: "0 converts to False", check: "bool(0) = False" },
+              { description: "1 converts to True", check: "bool(1) = True" }
+            ]
           }
         ],
         keyPoints: [
@@ -1190,7 +1270,11 @@ if age >= 18:
 else:
     years_left = 18 - age
     print(f"Access denied: Wait {years_left} more years")`,
-            description: "Basic if-else statements for simple binary decisions."
+            description: "Basic if-else statements for simple binary decisions.",
+            testCases: [
+              { description: "10 is identified as positive", check: "10 is positive" },
+              { description: "Age 20 grants access", check: "Access granted" }
+            ]
           },
           {
             title: "Multiple Conditions with Elif",
@@ -1216,7 +1300,11 @@ else:
 print(f"Score: {score}")
 print(f"Grade: {grade}")
 print(f"Comment: {message}")`,
-            description: "Use elif to handle multiple conditions efficiently."
+            description: "Use elif to handle multiple conditions efficiently.",
+            testCases: [
+              { description: "Score 87 earns Grade B", check: "Grade: B" },
+              { description: "Grade B comment is 'Great job!'", check: "Great job!" }
+            ]
           },
           {
             title: "Logical Operators",
@@ -1241,7 +1329,11 @@ if day == "Saturday" or day == "Sunday":
     print("It's the weekend! 🎉")
 else:
     print("It's a weekday. Time to work! 💼")`,
-            description: "Combine multiple conditions using and, or, not operators."
+            description: "Combine multiple conditions using and, or, not operators.",
+            testCases: [
+              { description: "Valid credentials result in login success", check: "Login successful" },
+              { description: "Saturday triggers weekend message", check: "weekend" }
+            ]
           }
         ],
         keyPoints: [
@@ -1397,7 +1489,11 @@ print("\\n\\nCountdown:")
 for num in range(10, 0, -1):
     print(num, end=" ")
 print("Blastoff! 🚀")`,
-            description: "Use range() to create different counting patterns."
+            description: "Use range() to create different counting patterns.",
+            testCases: [
+              { description: "Countdown ends with Blastoff! 🚀", check: "Blastoff! 🚀" },
+              { description: "Even numbers start with 0 2 4", check: "0 2 4" }
+            ]
           },
           {
             title: "While Loop Examples",
@@ -1426,7 +1522,11 @@ while attempts < max_attempts:
         print(f"✗ Wrong! {remaining} attempts left")
 else:
     print("Account locked!")`,
-            description: "While loops for unknown iteration counts."
+            description: "While loops for unknown iteration counts.",
+            testCases: [
+              { description: "While loop reaches Count: 5", check: "Count: 5" },
+              { description: "Correct password grants access", check: "Access granted" }
+            ]
           },
           {
             title: "Break and Continue",
@@ -1451,7 +1551,11 @@ for i in range(1, 6):
     for j in range(i):
         print("*", end="")
     print()  # New line`,
-            description: "Control loop flow with break and continue."
+            description: "Control loop flow with break and continue.",
+            testCases: [
+              { description: "First multiple of 7 after 20 is 21", check: "Found: 21" },
+              { description: "5-star row appears in triangle", check: "*****" }
+            ]
           }
         ],
         keyPoints: [
@@ -1598,7 +1702,11 @@ print("\\nDialog:", dialog)
 # Empty string
 empty = ""
 print("Empty string length:", len(empty))`,
-        description: "Learn different ways to create and display strings."
+        description: "Learn different ways to create and display strings.",
+        testCases: [
+          { description: "Single quotes string is printed", check: "Single quotes: Hello" },
+          { description: "Empty string has length 0", check: "Empty string length: 0" }
+        ]
       },
       {
         title: "String Indexing",
@@ -1618,7 +1726,11 @@ print("First character:", text[-6])  # P
 
 # String length
 print(f"\\nString '{text}' has {len(text)} characters")`,
-        description: "Access individual characters using positive and negative indices."
+        description: "Access individual characters using positive and negative indices.",
+        testCases: [
+          { description: "First character of 'Python' is P", check: "First character: P" },
+          { description: "Last character of 'Python' is n", check: "Last character: n" }
+        ]
       },
       {
         title: "String Immutability",
@@ -1642,7 +1754,11 @@ print("\\nConcatenated:", full_message)
 # Using f-strings (modern way)
 full_message_f = f"{greeting}, {name}!"
 print("F-string:", full_message_f)`,
-        description: "Understand string immutability and how to work with it."
+        description: "Understand string immutability and how to work with it.",
+        testCases: [
+          { description: "Modified string shows lowercase first letter", check: "Modified: hello" },
+          { description: "F-string concatenation is correct", check: "F-string: Hello, Alice!" }
+        ]
       }
     ],
     keyPoints: [
@@ -1781,7 +1897,11 @@ print("Every 2nd:", text[::2])       # "Pormiлg"
 
 # Reverse the string
 print("Reversed:", text[::-1])       # "gnimmargorP"`,
-        description: "Master the basics of string slicing with start:end:step."
+        description: "Master the basics of string slicing with start:end:step.",
+        testCases: [
+          { description: "First 7 chars of 'Programming' is 'Program'", check: "First 7 chars: Program" },
+          { description: "'Programming' reversed", check: "Reversed: gnimmargorP" }
+        ]
       },
       {
         title: "Practical Slicing",
@@ -1805,7 +1925,11 @@ print("\\nFile extension:", extension)
 phone = "1234567890"
 formatted = f"({phone[:3]}) {phone[3:6]}-{phone[6:]}"
 print("\\nFormatted phone:", formatted)`,
-        description: "Use slicing for real-world text processing tasks."
+        description: "Use slicing for real-world text processing tasks.",
+        testCases: [
+          { description: "Username extracted from email", check: "Username: user" },
+          { description: "Phone number formatted correctly", check: "(123) 456-7890" }
+        ]
       },
       {
         title: "Slicing with Step",
@@ -1827,7 +1951,11 @@ print("Reverse every 2nd:", text[::-2])
 message = "HSeelclroeWtoMrledsge"
 hidden = message[::2]  # Every 2nd character
 print("\\nHidden message:", hidden)`,
-        description: "Use step parameter for advanced slicing patterns."
+        description: "Use step parameter for advanced slicing patterns.",
+        testCases: [
+          { description: "Every 2nd character header shown", check: "Every 2nd:" },
+          { description: "Hidden message revealed from encoded string", check: "Hidden message:" }
+        ]
       }
     ],
     keyPoints: [
@@ -1982,7 +2110,11 @@ print("Contains '@'?", "@" in email)
 sentence = "I love Java"
 fixed = sentence.replace("Java", "Python")
 print("\\nFixed:", fixed)`,
-        description: "Explore built-in string methods for text transformation."
+        description: "Explore built-in string methods for text transformation.",
+        testCases: [
+          { description: "Text converted to uppercase", check: "PYTHON PROGRAMMING" },
+          { description: "Java replaced with Python", check: "Fixed: I love Python" }
+        ]
       },
       {
         title: "Concatenation Techniques",
@@ -2007,7 +2139,11 @@ print("Using f-string:", bio)
 print("\\n" + "=" * 40)
 print("ANNOUNCEMENT".center(40))
 print("=" * 40)`,
-        description: "Learn different ways to combine and format strings."
+        description: "Learn different ways to combine and format strings.",
+        testCases: [
+          { description: "Names joined with + operator", check: "Using +: John Doe" },
+          { description: "Words joined with join()", check: "Using join(): Python is amazing" }
+        ]
       },
       {
         title: "Escape Characters & Formatting",
@@ -2040,7 +2176,11 @@ Best regards,
 The Team
 """
 print(message)`,
-        description: "Master escape sequences and special formatting."
+        description: "Master escape sequences and special formatting.",
+        testCases: [
+          { description: "Newline escape creates separate lines", check: "Line 1" },
+          { description: "Quoted string contains Python is awesome!", check: "Python is awesome!" }
+        ]
       }
     ],
     keyPoints: [
@@ -2226,7 +2366,11 @@ Age: {age}
 City: {city}
 """
 print(message)`,
-        description: "Master f-string basics for clean, readable code."
+        description: "Master f-string basics for clean, readable code.",
+        testCases: [
+          { description: "Name inserted into greeting sentence", check: "Hello! My name is Alice." },
+          { description: "Math expression 10+5 evaluated in f-string", check: "10 + 5 = 15" }
+        ]
       },
       {
         title: "Advanced Formatting",
@@ -2260,7 +2404,11 @@ print("-" * 30)
 print(f"{'Laptop':<20} \${1299.99:>9.2f}")
 print(f"{'Mouse':<20} \${29.99:>9.2f}")
 print(f"{'Keyboard':<20} \${79.99:>9.2f}")`,
-        description: "Use format specifiers for professional output."
+        description: "Use format specifiers for professional output.",
+        testCases: [
+          { description: "Price formatted to 2 decimal places", check: "$1234.57" },
+          { description: "Percentage shown as 85.7%", check: "85.7%" }
+        ]
       },
       {
         title: "Real-World Invoice",
@@ -2302,7 +2450,11 @@ print(f"{'Tax (8%):':>40} \${tax:>9.2f}")
 print("=" * 50)
 print(f"{'TOTAL:':>40} \${grand_total:>9.2f}")
 print("=" * 50)`,
-        description: "Build a professional invoice with formatted output."
+        description: "Build a professional invoice with formatted output.",
+        testCases: [
+          { description: "Invoice header is displayed", check: "INVOICE" },
+          { description: "Grand total line appears", check: "TOTAL:" }
+        ]
       }
     ],
     keyPoints: [
@@ -2519,7 +2671,11 @@ print(f"City: {city}")
 sentence = "Python is awesome and fun"
 words = sentence.split()
 print(f"\\nWords ({len(words)}): {words}")`,
-        description: "Clean, validate, and parse text data effectively."
+        description: "Clean, validate, and parse text data effectively.",
+        testCases: [
+          { description: "Email cleaned to lowercase", check: "alice@example.com" },
+          { description: "CSV name field parsed", check: "Name: Alice" }
+        ]
       },
       {
         title: "Searching & Validation",
@@ -2553,7 +2709,11 @@ title = "BREAKING NEWS"
 print("\\nCASE CHECKS")
 print("Message all lowercase?", message.islower())
 print("Title all uppercase?", title.isupper())`,
-        description: "Search text and validate string properties."
+        description: "Search text and validate string properties.",
+        testCases: [
+          { description: "'Programming' found at index 7", check: "'Programming' starts at: 7" },
+          { description: "PIN of digits only returns True", check: "PIN is digits only? True" }
+        ]
       },
       {
         title: "Real-World Text Processor",
@@ -2606,7 +2766,11 @@ summary_parts = [
 ]
 summary = ", ".join(summary_parts)
 print(f"Summary: {summary}")`,
-        description: "Process and categorize log file entries."
+        description: "Process and categorize log file entries.",
+        testCases: [
+          { description: "LOG PROCESSOR header is shown", check: "LOG PROCESSOR" },
+          { description: "Summary lists the error count", check: "errors" }
+        ]
       }
     ],
     keyPoints: [
@@ -2911,8 +3075,10 @@ const LevelPage = () => {
                     </div>
                     <div className="p-4">
                       <UniversalCodePlayground
+                        key={currentExample}
                         defaultLanguage="python"
-                        initialCode={level.examples[currentExample].code}
+                        initialCode={`# ✍️ Write the code from the example above and run it!\n\n`}
+                        testCases={level.examples[currentExample].testCases || []}
                         height="400px"
                         showThemeToggle={false}
                       />
