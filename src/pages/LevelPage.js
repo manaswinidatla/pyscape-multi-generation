@@ -14,15 +14,21 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import UniversalCodePlayground from "../components/sandbox/UniversalCodePlayground";
 import lessonContentService from '../services/lessonContentService';
+import supabase from '../utils/supabaseClient';
+import { useAuth } from '../context/AuthContext';
 
 const LevelPage = () => {
   const { moduleId, lessonId, levelId } = useParams();
+  const { user } = useAuth();
   const [level, setLevel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('learn');
   const [currentExample, setCurrentExample] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
+  const [progressState, setProgressState] = useState('not_started');
+  const [progressSaving, setProgressSaving] = useState(false);
+  const [progressMessage, setProgressMessage] = useState('');
 
   // Fetch level content from Supabase
   useEffect(() => {
@@ -34,12 +40,13 @@ const LevelPage = () => {
         const modId = parseInt(moduleId);
         const lessonNum = parseInt(lessonId);
         const levelNum = parseInt(levelId);
+        const partLevelZeroBased = Math.max(levelNum - 1, 0);
         
         console.log(`📚 Fetching level content...`);
-        console.log(`   Module: ${modId}, Lesson: ${lessonNum}, Level: ${levelNum} (0-based)`);
-        console.log(`   Will convert level 0-based to 1-based for parts lookup`);
+        console.log(`   Module: ${modId}, Lesson: ${lessonNum}, Level: ${levelNum} (1-based)`);
+        console.log(`   Internal lookup level index: ${partLevelZeroBased}`);
         
-        const content = await lessonContentService.getLevelContent(modId, lessonNum, levelNum);
+        const content = await lessonContentService.getLevelContent(modId, lessonNum, partLevelZeroBased);
 
         if (!content) {
           console.error('❌ Content is null - level not found in database');
@@ -65,6 +72,73 @@ const LevelPage = () => {
   useEffect(() => {
     setShowSolution(false);
   }, [currentExample, activeTab]);
+
+  // Fetch lesson progress for current user
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (!user?.id) {
+        setProgressState('not_started');
+        return;
+      }
+
+      try {
+        const { data, error: progressError } = await supabase
+          .from('progress')
+          .select('state')
+          .eq('user_id', user.id)
+          .eq('lesson_id', parseInt(lessonId, 10))
+          .maybeSingle();
+
+        if (progressError) throw progressError;
+        setProgressState(data?.state || 'not_started');
+      } catch (err) {
+        console.error('Failed to fetch lesson progress:', err);
+      }
+    };
+
+    fetchProgress();
+  }, [user, lessonId]);
+
+  const updateProgressState = async (nextState) => {
+    if (!user?.id) {
+      setProgressMessage('Please sign in to save lesson progress.');
+      return;
+    }
+
+    setProgressSaving(true);
+    setProgressMessage('');
+
+    try {
+      const payload = {
+        user_id: user.id,
+        lesson_id: parseInt(lessonId, 10),
+        state: nextState,
+        updated_at: new Date().toISOString()
+      };
+
+      if (nextState === 'completed') {
+        payload.score = 100;
+      }
+
+      const { error: upsertError } = await supabase
+        .from('progress')
+        .upsert(payload, {
+          onConflict: 'user_id,lesson_id'
+        });
+
+      if (upsertError) throw upsertError;
+
+      setProgressState(nextState);
+      setProgressMessage(nextState === 'completed'
+        ? 'Lesson marked as completed. Module unlock will update on Learn page.'
+        : 'Progress saved.');
+    } catch (err) {
+      console.error('Failed to save lesson progress:', err);
+      setProgressMessage('Could not save progress. Please try again.');
+    } finally {
+      setProgressSaving(false);
+    }
+  };
 
   // Loading state
   if (loading) {
@@ -113,7 +187,7 @@ const LevelPage = () => {
             </Link>
             <div className="flex items-center gap-3">
               <span className="text-slate-400 text-sm">
-                Module {moduleId} • Lesson {lessonId} • Level {levelId}
+                Module {moduleId} • Lesson {lessonId} • Level {parseInt(levelId)}
               </span>
             </div>
           </div>
@@ -137,6 +211,13 @@ const LevelPage = () => {
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
                 {level.title}
               </h1>
+              {progressState === 'completed' && (
+                <div className="mb-3">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-900/40 text-emerald-300 border border-emerald-700/40">
+                    ✓ Lesson Completed
+                  </span>
+                </div>
+              )}
               {level.description && (
                 <p className="text-xl text-slate-300">
                   {level.description}
@@ -390,6 +471,7 @@ const LevelPage = () => {
                         <UniversalCodePlayground
                           defaultLanguage="python"
                           initialCode={level.exercise?.starterCode || '# Write your code here\n'}
+                          testCases={level.testCases || []}
                           height="400px"
                           showThemeToggle={false}
                         />
@@ -472,7 +554,7 @@ const LevelPage = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between text-slate-300">
                     <span>Current Level:</span>
-                    <span className="text-white font-semibold">{levelId}</span>
+                    <span className="text-white font-semibold">{parseInt(levelId)}</span>
                   </div>
                   <div className="flex justify-between text-slate-300">
                     <span>Lesson:</span>
@@ -486,6 +568,30 @@ const LevelPage = () => {
                     <span>XP Reward:</span>
                     <span className="text-primary font-semibold">+{level.xp_reward || 50}</span>
                   </div>
+                  <div className="flex justify-between text-slate-300">
+                    <span>Status:</span>
+                    <span className="text-white font-semibold capitalize">{progressState.replace('_', ' ')}</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-2">
+                  <button
+                    onClick={() => updateProgressState('in_progress')}
+                    disabled={progressSaving}
+                    className="w-full py-2 px-3 rounded-md bg-slate-700 text-slate-100 hover:bg-slate-600 transition disabled:opacity-60"
+                  >
+                    Mark In Progress
+                  </button>
+                  <button
+                    onClick={() => updateProgressState('completed')}
+                    disabled={progressSaving}
+                    className="w-full py-2 px-3 rounded-md bg-primary text-white hover:bg-primary/90 transition disabled:opacity-60"
+                  >
+                    {progressState === 'completed' ? 'Completed ✓' : 'Mark Complete'}
+                  </button>
+                  {progressMessage && (
+                    <p className="text-xs text-slate-300 mt-1">{progressMessage}</p>
+                  )}
                 </div>
               </div>
 

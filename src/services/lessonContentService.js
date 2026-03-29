@@ -14,6 +14,26 @@ class LessonContentService {
   }
 
   /**
+   * Build a readable fallback description for legacy lessons.
+   */
+  buildFallbackDescription(title, contentText = '') {
+    if (typeof contentText === 'string' && contentText.trim()) {
+      const noMarkdown = contentText
+        .replace(/```[\s\S]*?```/g, ' ')
+        .replace(/^#{1,6}\s+/gm, '')
+        .replace(/[*_`>#-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (noMarkdown.length >= 24) {
+        return noMarkdown.slice(0, 120).trim();
+      }
+    }
+
+    return `Practice core concepts from ${title}.`;
+  }
+
+  /**
    * Get module by ID
    */
   async getModule(moduleId) {
@@ -113,21 +133,31 @@ class LessonContentService {
         return null;
       }
 
-      // Handle parts - might be JSONB object, JSON string, or undefined
+      // Handle parts - might be JSONB object, JSON string, or double-escaped string
       let parts = lesson.parts;
       
+      console.log(`   Parts raw type: ${typeof parts}, value sample: ${JSON.stringify(parts)?.substring(0, 100)}`);
+      
       if (typeof parts === 'string') {
+        console.log(`   🔄 Parts is a string, attempting to parse...`);
         try {
           parts = JSON.parse(parts);
+          console.log(`   ✓ First parse succeeded, type now: ${typeof parts}`);
+          // Handle double-escaped case: parse again if result is still a string
+          if (typeof parts === 'string') {
+            console.log(`   🔄 Still a string after first parse, parsing again...`);
+            parts = JSON.parse(parts);
+            console.log(`   ✓ Second parse succeeded`);
+          }
         } catch (e) {
-          console.error(`   ❌ Failed to parse parts as JSON:`, e);
+          console.error(`   ❌ Failed to parse parts as JSON:`, e.message);
           parts = [];
         }
       }
       
       // Ensure parts is an array
       if (!Array.isArray(parts)) {
-        console.warn(`   ⚠️  Parts is not an array:`, typeof parts);
+        console.warn(`   ⚠️  Parts is not an array:`, typeof parts, parts);
         parts = [];
       }
       
@@ -175,7 +205,25 @@ class LessonContentService {
           levelContent[module.id][lessonNumber] = {};
 
           // Process parts (sublevels) within the lesson
-          const parts = lesson.parts || [];
+          let parts = lesson.parts || [];
+          
+          // Handle string/double-escaped parts
+          if (typeof parts === 'string') {
+            try {
+              parts = JSON.parse(parts);
+              if (typeof parts === 'string') {
+                parts = JSON.parse(parts);
+              }
+            } catch (e) {
+              console.error(`Failed to parse parts for lesson ${lesson.id}:`, e);
+              parts = [];
+            }
+          }
+          
+          if (!Array.isArray(parts)) {
+            parts = [];
+          }
+          
           parts.forEach(part => {
             levelContent[module.id][lessonNumber][part.level] = {
               title: part.title || lesson.title,
@@ -229,21 +277,65 @@ class LessonContentService {
         return null;
       }
 
-      const lessons = await this.getLessonsForModule(moduleId);
-      console.log(`   Found ${lessons.length} lessons for module ${moduleId}`);
-      
-      const lesson = lessons[lessonId - 1]; // Convert to 0-indexed
-      
-      if (!lesson) {
-        console.error(`❌ Lesson at index ${lessonId - 1} not found. Available count: ${lessons.length}`);
+      const { data: lesson, error: lessonError } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('id', lessonId)
+        .eq('module_id', moduleId)
+        .single();
+
+      if (lessonError || !lesson) {
+        console.error(`❌ Lesson ID ${lessonId} not found in module ${moduleId}:`, lessonError?.message || 'No lesson returned');
         return null;
       }
 
       console.log(`   ✓ Got lesson: "${lesson.title}" (id=${lesson.id}, order_index=${lesson.order_index})`);
 
       const part = await this.getLessonPart(lesson.id, partLevel1Based);
-      
+
       if (!part) {
+        console.warn(`⚠️ Part ${partLevel1Based} not found for lesson ${lesson.id}. Trying legacy content fallback...`);
+
+        // Fallback for legacy single-level lessons stored only in lesson.content
+        // Only apply fallback to Level 1 so deeper levels still require explicit parts.
+        if (partLevel1Based === 1 && lesson.content) {
+          let legacyContent = lesson.content;
+
+          if (typeof legacyContent === 'string') {
+            try {
+              legacyContent = JSON.parse(legacyContent);
+            } catch (e) {
+              // Keep as plain string markdown if JSON parsing fails
+            }
+          }
+
+          if (typeof legacyContent === 'string') {
+            return {
+              title: lesson.title,
+              description: this.buildFallbackDescription(lesson.title, legacyContent),
+              content: legacyContent,
+              examples: [],
+              keyPoints: [],
+              exercise: null,
+              testCases: [],
+              estimated_minutes: lesson.estimated_minutes,
+              xp_reward: lesson.xp_reward
+            };
+          }
+
+          return {
+            title: legacyContent.title || lesson.title,
+            description: legacyContent.description || this.buildFallbackDescription(lesson.title, legacyContent.content || legacyContent.markdown || ''),
+            content: legacyContent.content || legacyContent.markdown || '',
+            examples: legacyContent.examples || [],
+            keyPoints: legacyContent.keyPoints || [],
+            exercise: legacyContent.exercise || null,
+            testCases: legacyContent.testCases || [],
+            estimated_minutes: lesson.estimated_minutes,
+            xp_reward: lesson.xp_reward
+          };
+        }
+
         console.error(`❌ Part ${partLevel1Based} not found in lesson. Parts count: ${lesson.parts?.length || 0}`);
         return null;
       }

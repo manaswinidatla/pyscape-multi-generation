@@ -2,11 +2,112 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../utils/supabaseClient';
+import { useAuth } from '../context/AuthContext';
 
 const Learn = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Helper function to check if a module should be unlocked based on prerequisites
+  const checkModuleUnlockStatus = async (module, allModules, currentUser) => {
+    // If no prerequisites defined, module is available
+    if (!module.prerequisites || module.prerequisites.length === 0) {
+      return 'available';
+    }
+
+    // If user not logged in, lock module
+    if (!currentUser || !currentUser.id) {
+      return 'locked';
+    }
+
+    try {
+      // Fetch all lessons in prerequisite modules
+      const { data: prereqLessons, error: pError } = await supabase
+        .from('lessons')
+        .select('id')
+        .in('module_id', module.prerequisites);
+
+      if (pError) {
+        console.error('Error fetching prerequisite lessons:', pError);
+        return 'locked';
+      }
+
+      if (!prereqLessons || prereqLessons.length === 0) {
+        // No lessons in prerequisite modules, consider them met
+        return 'available';
+      }
+
+      const prereqLessonIds = prereqLessons.map(l => l.id);
+
+      // Fetch user's progress in prerequisite lessons
+      const { data: userProgress, error: prgError } = await supabase
+        .from('progress')
+        .select('lesson_id, state')
+        .eq('user_id', currentUser.id)
+        .in('lesson_id', prereqLessonIds);
+
+      if (prgError) {
+        console.error('Error fetching user progress:', prgError);
+        return 'locked';
+      }
+
+      // Check if all prerequisite lessons are completed
+      const completedLessonIds = (userProgress || [])
+        .filter(p => p.state === 'completed')
+        .map(p => p.lesson_id);
+
+      const allPrerequisitesCompleted = prereqLessonIds.every(id =>
+        completedLessonIds.includes(id)
+      );
+
+      return allPrerequisitesCompleted ? 'available' : 'locked';
+    } catch (err) {
+      console.error('Error checking module unlock status:', err);
+      return 'locked';
+    }
+  };
+
+  // Helper function to calculate module progress
+  const calculateModuleProgress = async (moduleId, currentUser) => {
+    if (!currentUser || !currentUser.id) {
+      return 0;
+    }
+
+    try {
+      // Get all lessons in this module
+      const { data: lessons, error: lError } = await supabase
+        .from('lessons')
+        .select('id')
+        .eq('module_id', moduleId);
+
+      if (lError || !lessons || lessons.length === 0) {
+        return 0;
+      }
+
+      const lessonIds = lessons.map(l => l.id);
+
+      // Get user's progress in these lessons
+      const { data: userProgress, error: pError } = await supabase
+        .from('progress')
+        .select('state')
+        .eq('user_id', currentUser.id)
+        .in('lesson_id', lessonIds);
+
+      if (pError) {
+        return 0;
+      }
+
+      const completedCount = (userProgress || [])
+        .filter(p => p.state === 'completed').length;
+
+      return Math.round((completedCount / lessons.length) * 100);
+    } catch (err) {
+      console.error('Error calculating module progress:', err);
+      return 0;
+    }
+  };
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -31,12 +132,20 @@ const Learn = () => {
           countMap[l.module_id] = (countMap[l.module_id] || 0) + 1;
         });
 
-        const enriched = (data || []).map((mod, idx) => ({
-          ...mod,
-          lessons: countMap[mod.id] || 0,
-          progress: 0, // TODO: compute from progress table
-          status: idx === 0 ? 'available' : 'locked', // first module unlocked, rest locked by default
-        }));
+        // Check unlock status and calculate progress for each module
+        const enriched = await Promise.all(
+          (data || []).map(async (mod) => {
+            const status = await checkModuleUnlockStatus(mod, data, user);
+            const progress = await calculateModuleProgress(mod.id, user);
+
+            return {
+              ...mod,
+              lessons: countMap[mod.id] || 0,
+              progress,
+              status,
+            };
+          })
+        );
 
         setModules(enriched);
       } catch (err) {
@@ -56,10 +165,33 @@ const Learn = () => {
     };
 
     fetchModules();
-  }, []);
+  }, [user]);
 
   const handleStartLearning = (moduleId) => {
     navigate(`/learn/${moduleId}`);
+  };
+
+  // Calculate overall progress across all modules
+  const overallProgress = modules.length > 0
+    ? Math.round(modules.reduce((sum, m) => sum + m.progress, 0) / modules.length)
+    : 0;
+
+  // Get next locked module and its prerequisites for helper text
+  const getNextLockedModuleInfo = () => {
+    const lockedModule = modules.find(m => m.status === 'locked');
+    if (!lockedModule || !lockedModule.prerequisites || lockedModule.prerequisites.length === 0) {
+      return null;
+    }
+
+    const prereqModules = modules.filter(m => lockedModule.prerequisites.includes(m.id));
+    if (prereqModules.length === 0) return null;
+
+    if (prereqModules.length === 1) {
+      return `Complete the ${prereqModules[0].title} module to unlock ${lockedModule.title}`;
+    } else {
+      const titles = prereqModules.map(m => m.title).join(' and ');
+      return `Complete ${titles} to unlock ${lockedModule.title}`;
+    }
   };
 
   if (loading) {
@@ -111,13 +243,13 @@ const Learn = () => {
           
           <div className="flex items-center gap-4 mb-2">
             <div className="flex-grow bg-dark-lightest h-2 rounded-full">
-              <div className="bg-primary h-2 rounded-full w-[5%]"></div>
+              <div className="bg-primary h-2 rounded-full" style={{ width: `${overallProgress}%` }}></div>
             </div>
-            <span className="text-sm font-medium">5%</span>
+            <span className="text-sm font-medium">{overallProgress}%</span>
           </div>
           
           <p className="text-sm text-gray-400">
-            Complete the Python Fundamentals module to unlock Data Science with Pandas
+            {getNextLockedModuleInfo() || 'Great! All modules are unlocked. Keep learning!'}
           </p>
         </div>
         
